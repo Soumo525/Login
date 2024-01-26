@@ -1,11 +1,37 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../utility/Auth'
+
+
 
 const Register = () => {
+const newAddUser = useRef(null)
+const {addNewUser} =  useAuth()
+const handleNew = (e) =>{
+  e.preventDefault()
+  const name = newAddUser.current.name.value
+  const email = newAddUser.current.email.value
+  const password1 = newAddUser.current.password1.value
+  const password2 = newAddUser.current.password2.value
+
+  if(password1 !== password2){
+    alert('Passwords did not match!')
+    return 
+  }
+  const userInfo = {
+   name,
+   email,
+   password1,
+   password2
+
+  }
+  addNewUser(userInfo)
+  
+}
   return (
     <div className="container">
       <div className="login-register-container">
-        <form>
+        <form ref={newAddUser} onSubmit={handleNew}>
 
           <div className="form-field-wrapper">
                 <label>Name:</label>
