@@ -14,7 +14,8 @@ export const AuthProvider = ({children}) => {
     const [user , setUser] = useState(null)
     
     useEffect(() => {
-      setLoadng(false)
+        checkUser()
+      //setLoadng(false)
  
     }, [])
     
@@ -35,10 +36,21 @@ export const AuthProvider = ({children}) => {
 
     }
 
+    const checkUser = async() => {
+        try {
+            let check = await account.get()
+            setUser(check)
+        } catch (error) {
+            console.error(error);
+        }
+        setLoadng(false)
+    }
+
     const data = {
         user,
         loginUser,
-        logoutUser
+        logoutUser,
+        checkUser
         
     }
     return (
