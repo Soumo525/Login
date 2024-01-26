@@ -5,19 +5,32 @@ import { useAuth } from '../utility/Auth'
 const Login = () => {
 
   const navigate = useNavigate()
-  const {user} =  useAuth()
-  
+  const {user,loginUser} =  useAuth()
 
+  const loginFrom = useRef(null)
 
   useEffect(() => {
     if (user) {
-      navigate('/login')
+      navigate('/')
     }
-  })
+  },[])
+
+  const handleSubmit = (e) =>{
+     e.preventDefault()
+     const email = loginFrom.current.email.value
+     const password = loginFrom.current.password.value
+
+     const userInfo = {
+      email,
+      password
+     }
+     loginUser(userInfo)
+     
+  }
   return (
     <div className="container">
         <div className="login-register-container">
-          <form>
+          <form ref={loginFrom} onSubmit={handleSubmit}>
 
             <div className="form-field-wrapper">
                 <label>Email:</label>
