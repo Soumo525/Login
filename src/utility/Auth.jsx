@@ -32,8 +32,9 @@ export const AuthProvider = ({children}) => {
         }
     }
 
-    const logoutUser =() => {
-
+    const logoutUser = async(userInfo) => {
+        account.deleteSession('current')
+        setUser(null)
     }
 
     const checkUser = async() => {

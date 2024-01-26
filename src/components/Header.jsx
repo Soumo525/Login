@@ -6,9 +6,9 @@ const Header = () => {
     const navigate = useNavigate()
     const { user, logoutUser} = useAuth()
 
-    const logoutClick = () => {
-        navigate('/login')
-    }
+    // const logoutClick = () => {
+    //     navigate('/login')
+    // }
 
     return (
         <div className="header">
