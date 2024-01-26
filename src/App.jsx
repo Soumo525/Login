@@ -7,11 +7,13 @@ import Profile from './pages/Profile'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import { Private } from './utility/Private'
+import { AuthProvider } from './utility/Auth'
 
 function App() {
 
   return (
     <Router>
+    <AuthProvider>
         <Header/>
         <Routes>
           <Route path="/login" element={<Login/>}/>
@@ -20,7 +22,9 @@ function App() {
             <Route path="/" element={<Home/>}/>
             <Route path="/profile" element={<Profile/>}/>
           </Route>
+         
         </Routes>
+        </AuthProvider>
     </Router>
   )
 }
