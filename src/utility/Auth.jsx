@@ -1,15 +1,17 @@
 import { ID } from "appwrite";
 import { createContext, useContext } from "react";
 import { useState, useEffect } from "react";
-import { account } from "../appwriteConf";
+import { account, storage} from "../appwriteConf";
 import { useNavigate } from "react-router-dom";
-
+import conf from "../conf/conf";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true); // Fixed typo in setLoadng
   const [user, setUser] = useState(null);
+
+  
 
   useEffect(() => {
     checkUser();
@@ -68,12 +70,63 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   };
 
+  // ...
+
+  const uploadImage = async (file) => {
+    console.log('Received file:', file);
+   
+    setLoading(true);
+    try {
+      if (!file) {
+        console.error('No file selected');
+        setLoading(false);
+        return;
+      }
+
+      // Additional logging to ensure the file parameter is a File object
+      console.log('File type:', Object.prototype.toString.call(file));
+
+      const img = await storage.createFile(
+        conf.appwriteBucketId,
+        ID.unique(),
+        file); // Replace with your actual bucket ID
+      console.log('Image uploaded successfully:', img);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    }
+    setLoading(false);
+  };
+  
+
+// ...
+
+const [imgListNew, setImageListNew] = useState()
+const listImage =async() => {
+  try {
+    const img = await storage.listFiles(
+      conf.appwriteBucketId
+    )
+    setImageListNew(img.files)
+    console.log("images " ,img.files)
+    console.log(imgListNew);
+  } catch (error) {
+    console.error('error in the list' ,error)
+  }
+}
+
+
+
+
   const data = {
     user,
+
     loginUser,
     logoutUser,
     checkUser,
     addNewUser,
+    uploadImage,
+    listImage,
+    imgListNew
   };
 
   return (
