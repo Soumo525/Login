@@ -100,7 +100,7 @@ export const AuthProvider = ({ children }) => {
 
 // ...
 
-const [imgListNew, setImageListNew] = useState()
+const [imgListNew, setImageListNew] = useState([])
 const listImage =async() => {
   try {
     const img = await storage.listFiles(
@@ -114,8 +114,18 @@ const listImage =async() => {
   }
 }
 
+/// Delete Image from AppWrite Bucket
 
 
+const deleteImage = async (fileId) => {
+  try {
+    await storage.deleteFile(
+      conf.appwriteBucketId, fileId)
+      setImageListNew((prevList) => prevList.filter((image) => image.$id !== fileId));
+  } catch (error) {
+    console.error(error);
+  }
+}
 
   const data = {
     user,
@@ -126,7 +136,8 @@ const listImage =async() => {
     addNewUser,
     uploadImage,
     listImage,
-    imgListNew
+    imgListNew,
+    deleteImage
   };
 
   return (
