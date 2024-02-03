@@ -1,7 +1,7 @@
-import { ID } from "appwrite";
+import { ID, Query } from "appwrite";
 import { createContext, useContext } from "react";
 import { useState, useEffect } from "react";
-import { account, storage} from "../appwriteConf";
+import { account, storage, database } from "../appwriteConf";
 import { useNavigate } from "react-router-dom";
 import conf from "../conf/conf";
 const AuthContext = createContext();
@@ -9,12 +9,14 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true); // Fixed typo in setLoadng
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState({ id: null }); // Include the user ID in the state
+
 
   
 
   useEffect(() => {
     checkUser();
+    
     // setLoadng(false); // This line is commented out, was it intentional?
   }, []);
 
@@ -127,6 +129,50 @@ const deleteImage = async (fileId) => {
   }
 }
 
+/// dataBase 
+const addToDataBase = async ({ title, content, status }) => {
+  try {
+    const userId = user.$id; // Extract user ID from the state
+    console.log(userId);
+    const data = {
+      title,
+      content,
+      status,
+      userId,
+    };
+    console.log(data);
+    const document = await database.createDocument(
+      conf.appwriteDatabaseId,
+      conf.appwriteCollectionId,
+      ID.unique(),
+      data
+    );
+    console.log("Data added to the database:", document);
+  } catch (error) {
+    console.error("Error adding data to the database:", error);
+  }
+};
+
+  // Fetch Data From Database
+  const  getPosts = async(queries = [Query.equal("status", "active")]) =>
+  {
+    try {
+        return await database.listDocuments(
+            conf.appwriteDatabaseId,
+            conf.appwriteCollectionId,
+            queries,
+            
+
+        )
+    } catch (error) {
+        console.log("Appwrite serive :: getPosts :: error", error);
+        return false
+    }
+}
+
+
+
+
   const data = {
     user,
 
@@ -137,7 +183,9 @@ const deleteImage = async (fileId) => {
     uploadImage,
     listImage,
     imgListNew,
-    deleteImage
+    deleteImage,
+    addToDataBase,
+    getPosts
   };
 
   return (
