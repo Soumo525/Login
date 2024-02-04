@@ -1,52 +1,71 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "../utility/Auth";
 import conf from "../conf/conf";
-import {} from 'appwrite';
+import {} from "appwrite";
 const Home = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [status, setContentStatus] = useState("active");
-  const { addToDataBase, getPosts } =  useAuth();
-  const [posts, setPosts] = useState([]);
+  const { addToDataBase, getPosts, deleteDatabse, postNew, updateData } = useAuth();
+  const [updateId, setUpdateId] = useState(null);
+  //
 
-//
+  //
+  useEffect(() => {
+    getPosts();
+  }, []);
 
-useEffect(() => {
-  // Fetch posts when the component mounts
-  fetchPosts();
-}, []);
+  const handleDeletePost = (documentId) => {
+    deleteDatabse(documentId);
+  };
 
-const fetchPosts = async () => {
-  try {
-    const response = await getPosts();
-    if (response) {
-      // Update the state with the fetched posts
-      setPosts(response.documents);
-      console.log(response.documents);
+  //
+
+  //  // Update 
+
+  const handleUpdate = async (updateId) => {
+    try {
+      const document = await updateData(updateId, { title, content, status });
+      if (document) {
+        console.log(document);
+  
+        // Update the state with existing or updated values
+        setTitle(document.title !== "" ? document.title : title);
+        setContent(document.content !== "" ? document.content : content);
+        setContentStatus(document.status || status);
+  
+        // Store the updated ID
+        setUpdateId(document.$id);
+      }
+    } catch (error) {
+      console.error(error);
     }
-  } catch (error) {
-    console.error("Error fetching posts:", error);
-  }
-};
+  };
+  
+  
 
 
 
-
-
-//
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Title:", title);
-    console.log("Content:", content);
-    console.log("Status",  status);
-    addToDataBase({ title, content, status });
+    if (updateId) {
+      // If updateId is set, it means we're updating an existing post
+      await updateData(updateId, { title, content, status });
+    } else {
+      // Otherwise, we're adding a new post
+      await addToDataBase({ title, content, status });
+    }
     // Clear the input fields after submission
     setTitle("");
     setContent("");
     setContentStatus("active");
-    fetchPosts();
+    setUpdateId(null); // Reset the updateId
+    await getPosts();
   };
+
+
+
+
 
   return (
     <>
@@ -74,8 +93,11 @@ const fetchPosts = async () => {
                 onChange={(e) => setContent(e.target.value)}
               />
             </div>
-            <select value={status}
-            onChange={(e)=>{setContentStatus(e.target.value)}} 
+            <select
+              value={status}
+              onChange={(e) => {
+                setContentStatus(e.target.value);
+              }}
             >
               <option value="active">Active</option>
               <option value="inActive">Inactive</option>
@@ -92,41 +114,73 @@ const fetchPosts = async () => {
       </div>
 
       {/* table */}
-     
 
-<div className="relative overflow-x-auto ">
-    <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-        <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+      <div className="relative overflow-x-auto ">
+        <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
-                <th scope="col" className="px-6 py-3">
-                  Title
-                </th>
-                <th scope="col" className="px-6 py-3">
-                 Content
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Status
-                </th>
-                <th scope="col" className="px-6 py-3">
-                    UserId
-                </th>
+              <th scope="col" className="px-6 py-3">
+                Title
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Content
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Status
+              </th>
+              <th scope="col" className="px-6 py-3">
+                UserId
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Delete
+              </th>
             </tr>
-        </thead>
-        <tbody>
+          </thead>
+          <tbody>
             {/* Map through the posts and render each row */}
-            { posts && posts.map((post) => (
-              <tr
-                key={post.$id}
-                className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
-              >
-                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                  {post.title}
-                </td>
-                <td className="px-6 py-4">{post.content}</td>
-                <td className="px-6 py-4">{post.status}</td>
-                <td className="px-6 py-4">{post.userId}</td>
-              </tr>
-            ))}
+            {postNew &&
+              postNew.map((post) => (
+                <tr
+                  key={post.$id}
+                  className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                >
+                  <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                    {post.title}
+                  </td>
+                  <td className="px-6 py-4">{post.content}</td>
+                  <td className="px-6 py-4">{post.status}</td>
+                  <td className="px-6 py-4">{post.userId}</td>
+                  <td className="px-6 py-4">
+                    <button
+                      onClick={() => {
+                        handleDeletePost(post.$id);
+                        console.log("okkk");
+                      }}
+                      className="bg-transparent hover:bg-red-500 
+                  text-blue-700 font-semibold hover:text-white 
+                  py-2 px-4 border border-blue-500 hover:border-transparent
+                  rounded"
+                    >
+                      Delete
+                    </button>
+                  </td>
+
+                  <td className="px-6 py-4">
+                    <button
+                      onClick={() => {
+                        handleUpdate(post.$id);
+                        console.log("Update");
+                      }}
+                      className="bg-transparent hover:bg-red-500 
+                  text-blue-700 font-semibold hover:text-white 
+                  py-2 px-4 border border-blue-500 hover:border-transparent
+                  rounded"
+                    >
+                      Update
+                    </button>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
